@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UI Freeze Demo with Heavy Processing</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+      .container {
+        text-align: center;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      label {
+        text-align: left !important;
+        margin-bottom: 0.5rem;
+      }
+      .input-control {
+        width: max-content;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: start;
+      }
+      input {
+        display: block;
+        margin: 0 auto;
+        width: 20rem;
+        outline: none;
+        border: 1px solid black;
+        border-radius: 0.2rem;
+        font-size: 1.1rem;
+        padding: 0.4rem 0.2rem;
+        margin-bottom: 1rem;
+      }
+      #status {
+        margin-top: 20px;
+        font-weight: bold;
+      }
+
+      .loading {
+        margin-top: 0.5rem;
+        display: none;
+        justify-content: center;
+      }
+
+      .loading::after {
+        content: "";
+        width: 20px;
+        height: 20px;
+        border: 5px solid #dddddd;
+        border-top-color: black;
+        border-radius: 50%;
+        animation: loading 1s ease infinite;
+      }
+
+      @keyframes loading {
+        to {
+          transform: rotate(1turn);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>UI Freeze Demo with Heavy Processing</h1>
+      <div class="input-control">
+        <label for="limit-value">Enter the limit:</label>
+        <input type="text" id="limit-value" value="10000000" />
+      </div>
+      <button id="freezeButton">Calculate Prime Numbers</button>
+      <div class="loading" id="loading"></div>
+
+      <div id="status"></div>
+    </div>
+
+    <script>
+      if (window.Worker) {
+        const limitInput = document.getElementById("limit-value");
+        const loading = document.getElementById("loading");
+        const freezeButton = document.getElementById("freezeButton");
+
+        freezeButton.addEventListener("click", function () {
+          const statusElement = document.getElementById("status");
+          statusElement.textContent = "Calculating prime numbers...";
+          loading.style.display = "flex";
+          freezeButton.innerText = "Calculating...";
+
+          const limit = +limitInput.value;
+          const worker = new Worker("worker.js");
+          worker.postMessage(limit);
+          worker.onmessage = (e) => {
+            statusElement.textContent = `Calculation complete! Found ${e.data.primes.length} prime numbers up to ${limit} in ${e.data.duration} seconds.`;
+            loading.style.display = "none";
+            freezeButton.innerText = "Calculate Prime Numbers";
+          };
+        });
+      }
+    </script>
+  </body>
+</html>
